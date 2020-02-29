@@ -39,7 +39,6 @@ pipeline {
             echo "current direct"
             echo "The current branch is $CURRENT_BRANCH"
             sh "pwd"
-            sh "cd $HOME/workspace/databaserepo"
             sh "git checkout $CURRENT_BRANCH"
             sh "git status"    
             }
