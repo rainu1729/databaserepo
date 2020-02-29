@@ -10,6 +10,9 @@ pipeline {
                          case "DEV": 
                             println("The branch is DEV");
                             CURRENT_BRANCH="DEV"
+                            connection_string="(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1523)) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = ORCLPDB1.localdomain)))"
+                            usr="hr"
+                            pwd="hr"
                             break; 
                          case "SIT": 
                             println("The branch is SIT"); 
@@ -33,7 +36,12 @@ pipeline {
         }
         stage('git pull') {
             steps {
+            echo "current direct"
             echo "The current branch is $CURRENT_BRANCH"
+            sh "pwd"
+            sh "cd $HOME/workspace/databaserepo"
+            sh "git checkout $CURRENT_BRANCH"
+            sh "git status"    
             }
         }
     }
