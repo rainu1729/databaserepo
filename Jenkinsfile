@@ -1,20 +1,47 @@
 pipeline {
-    agent any
-
+    agent { label 'master' } 
     stages {
-        stage('Build') {
+        stage('detect env'){
             steps {
-                echo 'Building..'
+                    script { 
+                      switch(env.BRANCH_NAME) {            
+                         //There is case statement defined for 4 cases 
+                         // Each case statement section has a break condition to exit the loop 		
+                         case "DEV": 
+                            println("The branch is DEV");
+                            CURRENT_BRANCH="DEV"
+                            connection_string="(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1523)) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = ORCLPDB1.localdomain)))"
+                            usr="hr"
+                            pwd="hr"
+                            break; 
+                         case "SIT": 
+                            println("The branch is SIT"); 
+                            CURRENT_BRANCH="SIT"    
+                            break; 
+                         case "UAT": 
+                            println("The branch is UAT");
+                            CURRENT_BRANCH="UAT"
+                            break; 
+                         case "master": 
+                            println("The branch is master");
+                            CURRENT_BRANCH="master"
+                            break; 
+                         default: 
+                            println("The branch is unknown"); 
+                            CURRENT_BRANCH="XXX"
+                            break; 
+                     }
+                   }
             }
         }
-        stage('Test') {
+        stage('git pull') {
             steps {
-                echo 'Testing..'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
+            echo "current direct"
+            echo "The current branch is $CURRENT_BRANCH"
+            sh "pwd"
+            sh "git checkout $CURRENT_BRANCH"
+            sh "git status"    
             }
         }
     }
+}
