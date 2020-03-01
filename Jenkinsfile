@@ -39,8 +39,9 @@ pipeline {
             echo "current direct"
             echo "The current branch is $CURRENT_BRANCH"
             sh "pwd"
-            sh "git checkout $CURRENT_BRANCH"
-            sh "git status"    
+            sh "git pull"
+            sh "git diff --name-only HEAD~1..HEAD"
+            sh "git status"
             }
         }
     }
