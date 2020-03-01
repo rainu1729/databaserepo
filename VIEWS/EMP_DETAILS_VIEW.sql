@@ -33,4 +33,5 @@ WHERE e.department_id = d.department_id
   AND c.region_id = r.region_id
   AND j.job_id = e.job_id
 WITH READ ONLY
+---new line
 ;
