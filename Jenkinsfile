@@ -40,12 +40,12 @@ pipeline {
             echo "The current branch is $CURRENT_BRANCH"
             sh "pwd"
             sh "git pull"
-            sh "mkdir -p ./ARTIFACTS/{\$CURRENT_BRANCH}_DEPLOYMENT &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'TABLES/*.sql') '$_'"
-            sh "mkdir -p ./ARTIFACTS/{\$CURRENT_BRANCH}_DEPLOYMENT &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'VIEWS/*.sql') '$_'"
-            sh "mkdir -p ./ARTIFACTS/{\$CURRENT_BRANCH}_DEPLOYMENT &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'FUNCTIONS/*.sql') '$_'"
-            sh "mkdir -p ./ARTIFACTS/{\$CURRENT_BRANCH}_DEPLOYMENT &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'PROCEDURES/*.sql') '$_'"
-            sh "mkdir -p ./ARTIFACTS/{\$CURRENT_BRANCH}_DEPLOYMENT &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'TRIGGERS/*.sql') '$_'"
-            sh "mkdir -p ./ARTIFACTS/{\$CURRENT_BRANCH}_DEPLOYMENT &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'PACKAGES/*.sql') '$_'"
+            sh "mkdir -p ./ARTIFACTS/\$CURRENT_BRANCH &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'TABLES/*.sql') '$_'"
+            sh "mkdir -p ./ARTIFACTS/\$CURRENT_BRANCH &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'VIEWS/*.sql') '$_'"
+            sh "mkdir -p ./ARTIFACTS/\$CURRENT_BRANCH &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'FUNCTIONS/*.sql') '$_'"
+            sh "mkdir -p ./ARTIFACTS/\$CURRENT_BRANCH &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'PROCEDURES/*.sql') '$_'"
+            sh "mkdir -p ./ARTIFACTS/\$CURRENT_BRANCH &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'TRIGGERS/*.sql') '$_'"
+            sh "mkdir -p ./ARTIFACTS/\$CURRENT_BRANCH &&  cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only 'PACKAGES/*.sql') '$_'"
             sh "git status"
             }
         }
