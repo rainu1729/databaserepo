@@ -41,12 +41,12 @@ pipeline {
             sh "echo $CURRENT_BRANCH"
             sh "pwd"
             sh "git pull"
-            sh "mkdir -p ./ARTIFACTS/$CURRENT_BRANCH"
-            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'TABLES/*.sql\' | xargs cp -t ./ARTIFACTS/$CURRENT_BRANCH |exit 0 "
-            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'FUNCTIONS/*.sql\' | xargs cp -t ./ARTIFACTS/$CURRENT_BRANCH |exit 0"
-            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'PROCEDURES/*.sql\' | xargs cp -t ./ARTIFACTS/$CURRENT_BRANCH |exit 0"
-            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'TRIGGERS/*.sql\' | xargs cp -t ./ARTIFACTS/$CURRENT_BRANCH |exit 0"
-            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'VIEWS/*.sql\' | xargs cp -t ./ARTIFACTS/$CURRENT_BRANCH |exit 0"
+                sh "mkdir -p ./ARTIFACTS/${CURRENT_BRANCH}_DEPLOY"
+            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'TABLES/*.sql\' | xargs cp -t ./ARTIFACTS/${CURRENT_BRANCH}_DEPLOY |exit 0 "
+            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'FUNCTIONS/*.sql\' | xargs cp -t ./ARTIFACTS/${CURRENT_BRANCH}_DEPLOY |exit 0"
+            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'PROCEDURES/*.sql\' | xargs cp -t ./ARTIFACTS/${CURRENT_BRANCH}_DEPLOY |exit 0"
+            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'TRIGGERS/*.sql\' | xargs cp -t ./ARTIFACTS/${CURRENT_BRANCH}_DEPLOY |exit 0"
+            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'VIEWS/*.sql\' | xargs cp -t ./ARTIFACTS/${CURRENT_BRANCH}_DEPLOY |exit 0"
 
             }
         }
