@@ -41,7 +41,7 @@ pipeline {
             sh "echo $CURRENT_BRANCH"
             sh "pwd"
             sh label: '', script: '''git pull
-                mkdir -p ./ARTIFACTS/$CURRENT_BRANCH
+                mkdir -p ./ARTIFACTS/\$CURRENT_BRANCH
                 git status'''
             }
         }
