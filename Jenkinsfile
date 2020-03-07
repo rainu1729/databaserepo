@@ -4,6 +4,7 @@ pipeline {
         stage('detect env'){
             steps {
                     script { 
+                      def REPO_NAME='databaserepo'
                       switch(env.BRANCH_NAME) {            
                          //There is case statement defined for 4 cases 
                          // Each case statement section has a break condition to exit the loop 		
@@ -34,7 +35,7 @@ pipeline {
                    }
             }
         }
-        stage('git pull') {
+        stage('git_pull') {
             steps {
             echo "current direct"
             echo "The current branch is $CURRENT_BRANCH"
@@ -48,6 +49,14 @@ pipeline {
             sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'TRIGGERS/*.sql\' | xargs cp -t ./ARTIFACTS/${CURRENT_BRANCH}_DEPLOY |exit 0"
             sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'VIEWS/*.sql\' | xargs cp -t ./ARTIFACTS/${CURRENT_BRANCH}_DEPLOY |exit 0"
 
+            }
+        }
+        stage('execute'){
+            steps{
+           dir('./ARTIFACTS/${CURRENT_BRANCH}_DEPLOY') {
+            // some block
+               sh "pwd"
+            }
             }
         }
     }
