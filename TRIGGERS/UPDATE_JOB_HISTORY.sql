@@ -1,5 +1,5 @@
 --------------------------------------------------------
---  DDL for Trigger UPDATE_JOB_HISTORY
+--  DDL for Trigger UPDATE_JOB_HISTORY,,
 --------------------------------------------------------
 
   CREATE OR REPLACE TRIGGER "HR"."UPDATE_JOB_HISTORY" 

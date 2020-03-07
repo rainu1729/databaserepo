@@ -1,5 +1,5 @@
 --------------------------------------------------------
---  DDL for Function SAMPLE_FUNCTION
+--  DDL for Function SAMPLE_FUNCTION ...
 --------------------------------------------------------
 
   CREATE OR REPLACE FUNCTION "HR"."SAMPLE_FUNCTION" 

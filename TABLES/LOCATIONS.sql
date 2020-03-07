@@ -1,5 +1,5 @@
 --------------------------------------------------------
---  DDL for Table LOCATIONS
+--  DDL for Table LOCATIONS...
 --------------------------------------------------------
 
   CREATE TABLE "HR"."LOCATIONS" 
