@@ -41,8 +41,8 @@ pipeline {
             sh "echo $CURRENT_BRANCH"
             sh "pwd"
             sh "git pull"
-            sh "mkdir -p ./ARTIFACTS/DEV"
-            sh 'git diff HEAD~1..HEAD --diff-filter=d --name-only \'TABLES/*.sql\' | xargs cp -t ./ARTIFACTS/DEV/'
+            sh "mkdir -p ./ARTIFACTS/$CURRENT_BRANCH"
+            sh 'git diff HEAD~1..HEAD --diff-filter=d --name-only \'TABLES/*.sql\' | xargs cp -t ./ARTIFACTS/$CURRENT_BRANCH/'
 
             }
         }
