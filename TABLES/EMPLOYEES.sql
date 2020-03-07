@@ -1,7 +1,7 @@
 --------------------------------------------------------
 --  DDL for Table EMPLOYEES
 --------------------------------------------------------
-
+--
   CREATE TABLE "HR"."EMPLOYEES" 
    (	"EMPLOYEE_ID" NUMBER(6,0), 
 	"FIRST_NAME" VARCHAR2(20), 
