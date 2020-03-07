@@ -38,9 +38,12 @@ pipeline {
             steps {
             echo "current direct"
             echo "The current branch is $CURRENT_BRANCH"
+            sh "echo $CURRENT_BRANCH"
             sh "pwd"
-            sh "git checkout $CURRENT_BRANCH"
-            sh "git status"    
+            sh "git pull"
+            sh "mkdir -p ./ARTIFACTS/$CURRENT_BRANCH"
+            sh "git diff HEAD~1..HEAD --diff-filter=d --name-only \'TABLES/*.sql\' | xargs cp -t ./ARTIFACTS/$CURRENT_BRANCH"
+
             }
         }
     }

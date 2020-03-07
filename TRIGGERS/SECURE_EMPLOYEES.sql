@@ -8,5 +8,6 @@ BEGIN
 --SAMPLE TRIGGER TEST AGAIN
   secure_dml;
 END secure_employees;
+--new line
 /
 ALTER TRIGGER "HR"."SECURE_EMPLOYEES" DISABLE;
