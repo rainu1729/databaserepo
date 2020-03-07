@@ -42,3 +42,4 @@ departments and countries tables. ';
 	  REFERENCES "HR"."COUNTRIES" ("COUNTRY_ID") ENABLE;
 
 -- commented lines
+-- commented
