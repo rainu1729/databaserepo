@@ -41,8 +41,8 @@ pipeline {
             sh "echo $CURRENT_BRANCH"
             sh "pwd"
             sh label: '', script: '''git pull
-                mkdir -p \\$(pwd)/ARTIFACTS/$CURRENT_BRANCH
-                cp \\$(git diff HEAD~1..HEAD --diff-filter=d --name-only \'TABLES/*.sql\') $CURRENT_BRANCH
+                mkdir -p ./ARTIFACTS/$CURRENT_BRANCH
+                cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only \'TABLES/*.sql\') $CURRENT_BRANCH
                 git status'''
             }
         }
