@@ -41,10 +41,7 @@ pipeline {
             sh "echo $CURRENT_BRANCH"
             sh "pwd"
             sh "git pull"
-            sh "mkdir -p DEV"
-            sh 'cp $(git diff HEAD~1..HEAD --diff-filter=d --name-only \'TABLES/*.sql\') ./ARTIFACTS/$CURRENT_BRANCH'
-
-                
+            sh "mkdir -p ./ARTIFACTS/DEV"  
             }
         }
     }
