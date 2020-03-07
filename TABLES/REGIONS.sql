@@ -13,3 +13,5 @@
 
 
   CREATE UNIQUE INDEX "HR"."REG_ID_PK" ON "HR"."REGIONS" ("REGION_ID");
+  
+  -commented
