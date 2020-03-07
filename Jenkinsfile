@@ -40,9 +40,11 @@ pipeline {
             echo "The current branch is $CURRENT_BRANCH"
             sh "echo $CURRENT_BRANCH"
             sh "pwd"
-            sh label: '', script: '''git pull
-                mkdir -p ./ARTIFACTS/${CURRENT_BRANCH}
-                git status'''
+            sh "git pull"
+            sh "mkdir -p DEV"
+            sh "cp "$(git diff HEAD~1..HEAD --diff-filter=d --name-only \'TABLES/*.sql\')" ./ARTIFACTS/DEV"
+
+                
             }
         }
     }
