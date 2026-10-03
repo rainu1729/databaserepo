@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="create-trigger-secure-employees" author="liquibase-deployer" runOnChange="true">
+        <comment>Create or replace SECURE_EMPLOYEES trigger (depends on SECURE_DML procedure)</comment>
+        <sqlFile path="TRIGGERS/SECURE_EMPLOYEES.sql" relativeToChangelogFile="false" splitStatements="true" endDelimiter="/" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="create-trigger-update-job-history" author="liquibase-deployer" runOnChange="true">
+        <comment>Create or replace UPDATE_JOB_HISTORY trigger (depends on ADD_JOB_HISTORY procedure)</comment>
+        <sqlFile path="TRIGGERS/UPDATE_JOB_HISTORY.sql" relativeToChangelogFile="false" splitStatements="true" endDelimiter="/" stripComments="false"/>
+    </changeSet>
+
+</databaseChangeLog>

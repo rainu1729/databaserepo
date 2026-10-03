@@ -10,4 +10,5 @@ BEGIN
                   :old.job_id, :old.department_id);
 END;
 /
-ALTER TRIGGER "HR"."UPDATE_JOB_HISTORY" ENABLE;
+ALTER TRIGGER "HR"."UPDATE_JOB_HISTORY" ENABLE
+/

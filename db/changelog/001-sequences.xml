@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="create-departments-seq" author="liquibase-deployer">
+        <comment>Create DEPARTMENTS_SEQ sequence</comment>
+        <sqlFile path="SEQUENCES/DEPARTMENTS_SEQ.sql" relativeToChangelogFile="false"/>
+    </changeSet>
+
+    <changeSet id="create-employees-seq" author="liquibase-deployer">
+        <comment>Create EMPLOYEES_SEQ sequence</comment>
+        <sqlFile path="SEQUENCES/EMPLOYEES_SEQ.sql" relativeToChangelogFile="false"/>
+    </changeSet>
+
+    <changeSet id="create-locations-seq" author="liquibase-deployer">
+        <comment>Create LOCATIONS_SEQ sequence</comment>
+        <sqlFile path="SEQUENCES/LOCATIONS_SEQ.sql" relativeToChangelogFile="false"/>
+    </changeSet>
+
+</databaseChangeLog>

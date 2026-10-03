@@ -26,8 +26,6 @@ located. Foreign key to country_id column of the countries table.';
 warehouse, and/or production site of a company. Does not store addresses /
 locations of customers. Contains 23 rows; references with the
 departments and countries tables. ';
-  GRANT REFERENCES ON "HR"."LOCATIONS" TO "OE";
-  GRANT SELECT ON "HR"."LOCATIONS" TO "OE";
   ALTER TABLE "HR"."LOCATIONS" MODIFY ("CITY" CONSTRAINT "LOC_CITY_NN" NOT NULL ENABLE);
   ALTER TABLE "HR"."LOCATIONS" ADD CONSTRAINT "LOC_ID_PK" PRIMARY KEY ("LOCATION_ID")
   USING INDEX  ENABLE;
@@ -35,7 +33,6 @@ departments and countries tables. ';
 
   CREATE INDEX "HR"."LOC_CITY_IX" ON "HR"."LOCATIONS" ("CITY") ;
   CREATE INDEX "HR"."LOC_COUNTRY_IX" ON "HR"."LOCATIONS" ("COUNTRY_ID") ;
-  CREATE UNIQUE INDEX "HR"."LOC_ID_PK" ON "HR"."LOCATIONS" ("LOCATION_ID") ;
   CREATE INDEX "HR"."LOC_STATE_PROVINCE_IX" ON "HR"."LOCATIONS" ("STATE_PROVINCE") ;
 
   ALTER TABLE "HR"."LOCATIONS" ADD CONSTRAINT "LOC_C_ID_FK" FOREIGN KEY ("COUNTRY_ID")

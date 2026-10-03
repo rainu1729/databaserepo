@@ -1,0 +1,30 @@
+# ============================================================
+# .gitignore — Liquibase + Oracle Wallet Security
+# ============================================================
+
+# Oracle Wallet files (NEVER commit these)
+wallet/
+*.sso
+*.p12
+*.pem
+*.jks
+tnsnames.ora
+sqlnet.ora
+ojdbc.properties
+Wallet_*.zip
+
+# Liquibase local overrides
+liquibase.local.properties
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Java / build
+*.class
+target/

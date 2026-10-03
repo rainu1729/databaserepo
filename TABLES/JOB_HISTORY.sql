@@ -26,7 +26,6 @@ changes departments within the job or changes jobs within the department,
 new rows get inserted into this table with old job information of the
 employee. Contains a complex primary key: employee_id+start_date.
 Contains 25 rows. References with jobs, employees, and departments tables.';
-  GRANT SELECT ON "HR"."JOB_HISTORY" TO "OE";
 
   ALTER TABLE "HR"."JOB_HISTORY" MODIFY ("EMPLOYEE_ID" CONSTRAINT "JHIST_EMPLOYEE_NN" NOT NULL ENABLE);
   ALTER TABLE "HR"."JOB_HISTORY" MODIFY ("START_DATE" CONSTRAINT "JHIST_START_DATE_NN" NOT NULL ENABLE);
@@ -37,7 +36,6 @@ Contains 25 rows. References with jobs, employees, and departments tables.';
   USING INDEX  ENABLE;
 
   CREATE INDEX "HR"."JHIST_DEPARTMENT_IX" ON "HR"."JOB_HISTORY" ("DEPARTMENT_ID") ;
-  CREATE UNIQUE INDEX "HR"."JHIST_EMP_ID_ST_DATE_PK" ON "HR"."JOB_HISTORY" ("EMPLOYEE_ID", "START_DATE");
 
   CREATE INDEX "HR"."JHIST_EMPLOYEE_IX" ON "HR"."JOB_HISTORY" ("EMPLOYEE_ID");
   CREATE INDEX "HR"."JHIST_JOB_IX" ON "HR"."JOB_HISTORY" ("JOB_ID");

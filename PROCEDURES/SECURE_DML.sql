@@ -1,7 +1,6 @@
 --------------------------------------------------------
 --  DDL for Procedure SECURE_DML
 --------------------------------------------------------
-set define off;
 
   CREATE OR REPLACE PROCEDURE "HR"."SECURE_DML" 
 IS

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Tables are ordered by foreign key dependencies -->
+
+    <changeSet id="create-table-regions" author="liquibase-deployer">
+        <comment>Create REGIONS table (no dependencies)</comment>
+        <sqlFile path="TABLES/REGIONS.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="create-table-countries" author="liquibase-deployer">
+        <comment>Create COUNTRIES table (FK: REGIONS)</comment>
+        <sqlFile path="TABLES/COUNTRIES.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="create-table-locations" author="liquibase-deployer">
+        <comment>Create LOCATIONS table (FK: COUNTRIES)</comment>
+        <sqlFile path="TABLES/LOCATIONS.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="create-table-jobs" author="liquibase-deployer">
+        <comment>Create JOBS table (no dependencies)</comment>
+        <sqlFile path="TABLES/JOBS.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="create-table-departments" author="liquibase-deployer">
+        <comment>Create DEPARTMENTS table (FK: LOCATIONS; DEPT_MGR_FK deferred)</comment>
+        <sqlFile path="TABLES/DEPARTMENTS.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="create-table-employees" author="liquibase-deployer">
+        <comment>Create EMPLOYEES table (FK: DEPARTMENTS, JOBS, self-ref)</comment>
+        <sqlFile path="TABLES/EMPLOYEES.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="create-table-job-history" author="liquibase-deployer">
+        <comment>Create JOB_HISTORY table (FK: EMPLOYEES, JOBS, DEPARTMENTS)</comment>
+        <sqlFile path="TABLES/JOB_HISTORY.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="create-table-new-table-in-pdb" author="liquibase-deployer">
+        <comment>Create NEW_TABLE_IN_PDB table (no dependencies)</comment>
+        <sqlFile path="TABLES/NEW_TABLE_IN_PDB.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+</databaseChangeLog>
