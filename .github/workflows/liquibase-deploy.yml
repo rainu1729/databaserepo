@@ -1,0 +1,139 @@
+# ============================================================
+# Liquibase Deployment Pipeline
+# ============================================================
+# Deploys Oracle HR schema objects to an Oracle Autonomous
+# Database using Liquibase Community Edition (OSS).
+#
+# Required GitHub Secrets:
+#   ORACLE_WALLET_BASE64 - Base64-encoded Oracle Wallet ZIP
+#   DB_USERNAME          - Database username (LIQUIBASE_DEPLOYER)
+#   DB_PASSWORD          - Database password
+#   WALLET_PASSWORD      - Wallet download password (for JKS)
+# ============================================================
+
+name: Liquibase Deploy to Oracle ADB
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy Database Changes
+    runs-on: ubuntu-latest
+
+    env:
+      TNS_ADMIN: ${{ github.workspace }}/wallet
+
+    steps:
+      # --------------------------------------------------------
+      # Step 1: Checkout repository
+      # --------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --------------------------------------------------------
+      # Step 2: Restore Oracle Wallet from GitHub Secrets
+      # --------------------------------------------------------
+      - name: Decode and extract Oracle Wallet
+        run: |
+          mkdir -p ${TNS_ADMIN}
+          echo "${{ secrets.ORACLE_WALLET_BASE64 }}" | base64 -d > wallet.zip
+          unzip -o wallet.zip -d ${TNS_ADMIN}
+          rm wallet.zip
+          echo "✅ Wallet extracted to ${TNS_ADMIN}"
+          ls -la ${TNS_ADMIN}
+
+      # --------------------------------------------------------
+      # Step 3: Configure wallet for JDBC (JKS mode)
+      # --------------------------------------------------------
+      - name: Configure ojdbc.properties for JKS authentication
+        run: |
+          cat > ${TNS_ADMIN}/ojdbc.properties << 'PROPS'
+          # Configured for JKS-based authentication (JDBC compatible)
+          # SSO wallet (oracle.net.wallet_location) is commented out
+          # oracle.net.wallet_location=(SOURCE=(METHOD=FILE)(METHOD_DATA=(DIRECTORY=${TNS_ADMIN})))
+          javax.net.ssl.trustStore=${TNS_ADMIN}/truststore.jks
+          javax.net.ssl.trustStorePassword=${{ secrets.WALLET_PASSWORD }}
+          javax.net.ssl.keyStore=${TNS_ADMIN}/keystore.jks
+          javax.net.ssl.keyStorePassword=${{ secrets.WALLET_PASSWORD }}
+          PROPS
+          echo "✅ ojdbc.properties configured for JKS"
+
+      # --------------------------------------------------------
+      # Step 4: Configure sqlnet.ora
+      # --------------------------------------------------------
+      - name: Configure sqlnet.ora with wallet path
+        run: |
+          cat > ${TNS_ADMIN}/sqlnet.ora << SQLNET
+          WALLET_LOCATION = (SOURCE = (METHOD = file) (METHOD_DATA = (DIRECTORY = ${TNS_ADMIN})))
+          SSL_SERVER_DN_MATCH = yes
+          SQLNET
+          echo "✅ sqlnet.ora configured"
+
+      # --------------------------------------------------------
+      # Step 5: Install Liquibase (Community / OSS Edition)
+      # --------------------------------------------------------
+      - name: Setup Liquibase
+        uses: liquibase/setup-liquibase@v2
+        with:
+          edition: 'oss'
+
+      # --------------------------------------------------------
+      # Step 6: Validate changelogs
+      # --------------------------------------------------------
+      - name: Validate Liquibase changelogs
+        run: |
+          liquibase validate \
+            --changelog-file=db/changelog/db.changelog-master.xml \
+            --url="jdbc:oracle:thin:@oracletransdb_low?TNS_ADMIN=${TNS_ADMIN}" \
+            --username=${{ secrets.DB_USERNAME }} \
+            --password=${{ secrets.DB_PASSWORD }} \
+            --default-schema-name=HR \
+            --liquibase-schema-name=LIQUIBASE_DEPLOYER \
+            --driver=oracle.jdbc.OracleDriver
+
+      # --------------------------------------------------------
+      # Step 7: Preview changes (dry run)
+      # --------------------------------------------------------
+      - name: Preview SQL changes (update-sql)
+        run: |
+          liquibase update-sql \
+            --changelog-file=db/changelog/db.changelog-master.xml \
+            --url="jdbc:oracle:thin:@oracletransdb_low?TNS_ADMIN=${TNS_ADMIN}" \
+            --username=${{ secrets.DB_USERNAME }} \
+            --password=${{ secrets.DB_PASSWORD }} \
+            --default-schema-name=HR \
+            --liquibase-schema-name=LIQUIBASE_DEPLOYER \
+            --driver=oracle.jdbc.OracleDriver
+
+      # --------------------------------------------------------
+      # Step 8: Deploy changes
+      # --------------------------------------------------------
+      - name: Deploy database changes (liquibase update)
+        run: |
+          liquibase update \
+            --changelog-file=db/changelog/db.changelog-master.xml \
+            --url="jdbc:oracle:thin:@oracletransdb_low?TNS_ADMIN=${TNS_ADMIN}" \
+            --username=${{ secrets.DB_USERNAME }} \
+            --password=${{ secrets.DB_PASSWORD }} \
+            --default-schema-name=HR \
+            --liquibase-schema-name=LIQUIBASE_DEPLOYER \
+            --driver=oracle.jdbc.OracleDriver
+
+      # --------------------------------------------------------
+      # Step 9: Deployment summary
+      # --------------------------------------------------------
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "============================================================"
+          echo "✅ DATABASE DEPLOYMENT SUCCESSFUL"
+          echo "============================================================"
+          echo "Database:  Oracle Autonomous Database (oracletransdb_low)"
+          echo "User:      ${{ secrets.DB_USERNAME }}"
+          echo "Schema:    HR"
+          echo "Tracking:  LIQUIBASE_DEPLOYER schema"
+          echo "Changelog: db/changelog/db.changelog-master.xml"
+          echo "============================================================"

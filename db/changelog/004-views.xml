@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="create-view-emp-details" author="liquibase-deployer" runOnChange="true">
+        <comment>Create or replace EMP_DETAILS_VIEW (replaceable object)</comment>
+        <sqlFile path="VIEWS/EMP_DETAILS_VIEW.sql" relativeToChangelogFile="false" splitStatements="false" stripComments="false"/>
+    </changeSet>
+
+</databaseChangeLog>

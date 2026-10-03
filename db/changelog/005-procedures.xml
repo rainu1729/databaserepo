@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="create-procedure-secure-dml" author="liquibase-deployer" runOnChange="true">
+        <comment>Create or replace SECURE_DML procedure</comment>
+        <sqlFile path="PROCEDURES/SECURE_DML.sql" relativeToChangelogFile="false" splitStatements="true" endDelimiter="/" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="create-procedure-add-job-history" author="liquibase-deployer" runOnChange="true">
+        <comment>Create or replace ADD_JOB_HISTORY procedure (depends on JOB_HISTORY table)</comment>
+        <sqlFile path="PROCEDURES/ADD_JOB_HISTORY.sql" relativeToChangelogFile="false" splitStatements="true" endDelimiter="/" stripComments="false"/>
+    </changeSet>
+
+</databaseChangeLog>

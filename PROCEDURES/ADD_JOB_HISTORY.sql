@@ -1,7 +1,6 @@
 --------------------------------------------------------
 --  DDL for Procedure ADD_JOB_HISTORY
 --------------------------------------------------------
-set define off;
 
   CREATE OR REPLACE PROCEDURE "HR"."ADD_JOB_HISTORY" 
   (  p_emp_id          job_history.employee_id%type
