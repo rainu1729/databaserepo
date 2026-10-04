@@ -11,3 +11,5 @@ end;
 --added sample lines
 --added some more lines
 /
+
+show errors;
