@@ -8,8 +8,4 @@ return varchar2 as
 begin
 return v_in+3;
 end;
---added sample lines
---added some more lines
 /
-
-show errors;
