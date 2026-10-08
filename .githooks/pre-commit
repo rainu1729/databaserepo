@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Git pre-commit hook: Auto-update Liquibase changelog XML files
+# ==============================================================================
+
+set -e
+
+# Run sync-changelog on staged files
+"$(git rev-parse --show-toplevel)/scripts/sync-changelog.sh" --staged

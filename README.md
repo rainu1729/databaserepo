@@ -434,34 +434,55 @@ db.changelog-master.xml
 
 ## Adding New Database Changes
 
-### Adding a New Table
+### Automated Changelog Registration (Git Hook)
 
-1. Create the SQL file:
-   ```bash
-   # Create TABLES/MY_NEW_TABLE.sql
-   cat > TABLES/MY_NEW_TABLE.sql << 'EOF'
-   CREATE TABLE "HR"."MY_NEW_TABLE"
-   (
-     "ID"          NUMBER       NOT NULL,
-     "NAME"        VARCHAR2(100),
-     "CREATED_AT"  TIMESTAMP    DEFAULT SYSTIMESTAMP,
-     CONSTRAINT "MY_NEW_TABLE_PK" PRIMARY KEY ("ID")
-   );
-   EOF
-   ```
+This repository includes an automated pre-commit hook in `.githooks/pre-commit` and a helper script in `scripts/sync-changelog.sh`.
 
-2. Add a new changeset to `db/changelog/002-tables.xml`:
+When configured (`git config core.hooksPath .githooks`), adding any new `.sql` file to `TABLES/`, `VIEWS/`, `PROCEDURES/`, `FUNCTIONS/`, `TRIGGERS/`, `SEQUENCES/`, or `PACKAGES/` will **automatically generate and stage the corresponding `<changeSet>` entry** in the appropriate changelog XML when you commit:
+
+```bash
+# 1. Enable the git hooks (once per clone)
+git config core.hooksPath .githooks
+
+# 2. Simply create your new SQL file
+cat > TABLES/MY_NEW_TABLE.sql << 'EOF'
+CREATE TABLE "HR"."MY_NEW_TABLE"
+(
+  "ID"          NUMBER       NOT NULL,
+  "NAME"        VARCHAR2(100),
+  "CREATED_AT"  TIMESTAMP    DEFAULT SYSTIMESTAMP,
+  CONSTRAINT "MY_NEW_TABLE_PK" PRIMARY KEY ("ID")
+);
+EOF
+
+# 3. Add and commit — the hook auto-updates and stages db/changelog/002-tables.xml!
+git add TABLES/MY_NEW_TABLE.sql
+git commit -m "feat: add MY_NEW_TABLE"
+git push origin main
+```
+
+You can also run the synchronization manually at any time:
+```bash
+./scripts/sync-changelog.sh --all     # Scan and register any unmapped files
+./scripts/sync-changelog.sh --check   # Check if any files are missing (CI mode)
+```
+
+### Manual Changelog Registration (Alternative)
+
+If you prefer to register changesets manually:
+
+1. Create the SQL file in `TABLES/`, `VIEWS/`, `PROCEDURES/`, etc.
+2. Add a new changeset to the corresponding changelog XML (e.g. `db/changelog/002-tables.xml`):
    ```xml
-   <changeSet id="create-table-my-new-table" author="your-name">
-       <comment>Create MY_NEW_TABLE</comment>
+   <changeSet id="create-table-my-new-table" author="liquibase-deployer">
+       <comment>Create MY_NEW_TABLE table</comment>
        <sqlFile path="TABLES/MY_NEW_TABLE.sql"
                 relativeToChangelogFile="false"
                 splitStatements="true"
-                stripComments="false"/>
+                stripComments="true"/>
    </changeSet>
    ```
-
-3. Commit and push to `main`:
+3. Commit both files:
    ```bash
    git add TABLES/MY_NEW_TABLE.sql db/changelog/002-tables.xml
    git commit -m "feat: add MY_NEW_TABLE"
