@@ -7,17 +7,17 @@
 
     <changeSet id="create-departments-seq" author="liquibase-deployer">
         <comment>Create DEPARTMENTS_SEQ sequence</comment>
-        <sqlFile path="SEQUENCES/DEPARTMENTS_SEQ.sql" relativeToChangelogFile="false"/>
+        <sqlFile path="SEQUENCES/DEPARTMENTS_SEQ.sql" relativeToChangelogFile="false" stripComments="true"/>
     </changeSet>
 
     <changeSet id="create-employees-seq" author="liquibase-deployer">
         <comment>Create EMPLOYEES_SEQ sequence</comment>
-        <sqlFile path="SEQUENCES/EMPLOYEES_SEQ.sql" relativeToChangelogFile="false"/>
+        <sqlFile path="SEQUENCES/EMPLOYEES_SEQ.sql" relativeToChangelogFile="false" stripComments="true"/>
     </changeSet>
 
     <changeSet id="create-locations-seq" author="liquibase-deployer">
         <comment>Create LOCATIONS_SEQ sequence</comment>
-        <sqlFile path="SEQUENCES/LOCATIONS_SEQ.sql" relativeToChangelogFile="false"/>
+        <sqlFile path="SEQUENCES/LOCATIONS_SEQ.sql" relativeToChangelogFile="false" stripComments="true"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -10,7 +10,7 @@
 
     <changeSet id="add-deferred-foreign-keys" author="liquibase-deployer">
         <comment>Add DEPT_MGR_FK: DEPARTMENTS.MANAGER_ID references EMPLOYEES.EMPLOYEE_ID</comment>
-        <sqlFile path="TABLES/DEFERRED_FOREIGN_KEYS.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+        <sqlFile path="TABLES/DEFERRED_FOREIGN_KEYS.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="true"/>
     </changeSet>
 
 </databaseChangeLog>
