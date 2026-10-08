@@ -89,7 +89,8 @@ This repository contains the Oracle **HR (Human Resources)** sample schema — t
 databaserepo/
 ├── .github/
 │   └── workflows/
-│       └── liquibase-deploy.yml        # GitHub Actions CI/CD pipeline
+│       ├── liquibase-validate.yml      # Phase 1: PR validation pipeline (dry run)
+│       └── liquibase-deploy.yml        # Phase 2: Deployment pipeline (master branch)
 ├── .gitignore                          # Prevents wallet/credential commits
 ├── db/
 │   └── changelog/
@@ -334,32 +335,111 @@ Oracle Autonomous Database wallets may need to be updated when:
    ```
 
 6. **Trigger a deployment** to verify the new wallet works:
-   - Push a commit to the `main` branch, or
+   - Push a commit to the `master` branch, or
    - Manually re-run the last workflow in the Actions tab
 
 ---
 
-## GitHub Actions CI/CD Pipeline
+## GitHub Actions CI/CD Pipeline (Two-Phase Model)
 
-The workflow file is located at `.github/workflows/liquibase-deploy.yml`.
+This repository implements a **Two-Phase CI/CD** strategy to ensure safe, audited database changes:
 
-### Trigger
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       Phase 1: PR Validation (Dry Run)                      │
+│                  Workflow: .github/workflows/liquibase-validate.yml         │
+│                                                                             │
+│  Developer opens/updates PR ──▶ 1. ./scripts/sync-changelog.sh --check      │
+│  targeting master branch        2. liquibase validate                       │
+│                                 3. liquibase update-sql (dry run preview)   │
+│                                 4. Post DDL preview to PR comment & summary │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │ PR approved & merged into master
+┌──────────────────────────────────────▼──────────────────────────────────────┐
+│                       Phase 2: Deployment on PR Merge                       │
+│                   Workflow: .github/workflows/liquibase-deploy.yml          │
+│                                                                             │
+│  Commit pushed / PR merged  ──▶ 1. Decode Oracle Wallet                     │
+│  into master branch             2. Configure JKS & sqlnet.ora               │
+│                                 3. liquibase update (apply changes to DB)   │
+│                                 4. Print deployment confirmation            │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
-The pipeline runs automatically on every **push to the `main` branch**.
+---
 
-### Pipeline Steps
+### Phase 1: Pull Request Validation (`liquibase-validate.yml`)
+
+- **Trigger**: Automatically triggered on any **Pull Request targeting `master`** (`on: pull_request: branches: [master]`).
+- **Purpose**: Validates database changes *before* they are merged into the main codebase without altering database state.
+- **Actions Performed**:
+  1. **Changelog Integrity Check**: Runs `./scripts/sync-changelog.sh --check` to ensure every `.sql` file in object folders has an associated changeset in the changelog XML files.
+  2. **Liquibase Validation**: Runs `liquibase validate` to verify changelog XML syntax and check for broken references or checksum errors.
+  3. **Dry-Run Preview (`update-sql`)**: Executes `liquibase update-sql` to generate the exact SQL DDL statements that Liquibase will execute against the target database.
+  4. **PR Feedback**: Writes the SQL preview to the GitHub Actions Job Summary and automatically comments on the Pull Request so reviewers can inspect the planned changes.
+
+---
+
+### Phase 2: Deployment on PR Merge (`liquibase-deploy.yml`)
+
+- **Trigger**:
+  - Automatically runs when a **Pull Request is merged into `master`** or commits are pushed to `master` (`on: push: branches: [master]`).
+  - Can also be triggered on-demand via **`workflow_dispatch`** (Manual Run).
+- **Purpose**: Applies pending changesets to the Oracle Autonomous Database.
+- **Actions Performed**:
+  1. Decodes and extracts the Oracle Wallet (`mTLS`).
+  2. Configures JKS properties and `sqlnet.ora`.
+  3. Executes **`liquibase update`** to deploy pending changes to the `HR` schema.
+  4. Emits a deployment confirmation summary.
+
+#### Concurrency & Execution Safety
+
+- **Concurrency Control**:
+  ```yaml
+  concurrency:
+    group: oracle-db-deploy
+    cancel-in-progress: false
+  ```
+- **Sequential Execution**:
+  If multiple PRs are merged or commits are pushed in quick succession, GitHub Actions will queue runs sequentially rather than executing concurrently or terminating an in-flight deployment. This prevents competing transactions, locked state (`DATABASECHANGELOGLOCK`), and interrupted DDL executions.
+
+---
+
+### Recommended Release Workflow
+
+1. **Protect `master`**: Enable GitHub Branch Protection on `master` (**Settings → Branches → Add rule**) and require pull requests before merging.
+2. **Feature Branch**: Create a feature branch (e.g. `feature/add-new-table`) and commit database changes. The local pre-commit hook automatically registers changesets in changelog XMLs.
+3. **Open PR**: Open a Pull Request targeting `master`. **Phase 1** triggers automatically to validate changes and post the dry-run SQL preview to the PR.
+4. **Review & Merge**: Review the SQL preview in the PR. Once approved, merge the PR into `master`.
+5. **Automatic Deployment**: Merging into `master` triggers **Phase 2**, which deploys changes via `liquibase update`.
+
+### Summary of Workflow Steps
+
+#### Phase 1: PR Validation (`liquibase-validate.yml`)
 
 | Step | Action | Description |
 |---|---|---|
 | 1 | **Checkout** | Clones the repository |
-| 2 | **Decode Wallet** | Restores the Oracle Wallet from `ORACLE_WALLET_BASE64` secret |
-| 3 | **Configure ojdbc.properties** | Switches from SSO to JKS authentication mode for JDBC compatibility |
-| 4 | **Configure sqlnet.ora** | Points `WALLET_LOCATION` to the extracted wallet directory |
-| 5 | **Setup Liquibase** | Installs Liquibase Community Edition via `liquibase/setup-liquibase@v2` |
-| 6 | **Validate** | Runs `liquibase validate` to check changelog XML syntax |
-| 7 | **Preview** | Runs `liquibase update-sql` to show what SQL will be executed (dry run) |
-| 8 | **Deploy** | Runs `liquibase update` to apply pending changes to the database |
-| 9 | **Summary** | Prints deployment confirmation |
+| 2 | **Check Registration** | Runs `./scripts/sync-changelog.sh --check` to ensure all SQL files are mapped |
+| 3 | **Decode Wallet** | Restores Oracle Wallet from `ORACLE_WALLET_BASE64` secret |
+| 4 | **Configure ojdbc.properties** | Configures JKS authentication for JDBC |
+| 5 | **Configure sqlnet.ora** | Points `WALLET_LOCATION` to wallet directory |
+| 6 | **Setup Liquibase** | Installs Liquibase Community Edition |
+| 7 | **Validate** | Runs `liquibase validate` to check changelog XML syntax |
+| 8 | **Preview (Dry Run)** | Runs `liquibase update-sql` and outputs preview to logs & Step Summary |
+| 9 | **PR Comment** | Automatically posts dry-run SQL preview as a comment on the Pull Request |
+
+#### Phase 2: Deployment on Merge (`liquibase-deploy.yml`)
+
+| Step | Action | Description |
+|---|---|---|
+| 1 | **Checkout** | Clones the repository |
+| 2 | **Decode Wallet** | Restores Oracle Wallet from `ORACLE_WALLET_BASE64` secret |
+| 3 | **Configure ojdbc.properties** | Configures JKS authentication for JDBC |
+| 4 | **Configure sqlnet.ora** | Points `WALLET_LOCATION` to wallet directory |
+| 5 | **Setup Liquibase** | Installs Liquibase Community Edition |
+| 6 | **Deploy** | Runs `liquibase update` to apply changesets to the database |
+| 7 | **Summary** | Prints deployment confirmation |
 
 ### Viewing Pipeline Results
 
@@ -458,7 +538,7 @@ EOF
 # 3. Add and commit — the hook auto-updates and stages db/changelog/002-tables.xml!
 git add TABLES/MY_NEW_TABLE.sql
 git commit -m "feat: add MY_NEW_TABLE"
-git push origin main
+git push origin master
 ```
 
 You can also run the synchronization manually at any time:
@@ -486,7 +566,7 @@ If you prefer to register changesets manually:
    ```bash
    git add TABLES/MY_NEW_TABLE.sql db/changelog/002-tables.xml
    git commit -m "feat: add MY_NEW_TABLE"
-   git push origin main
+   git push origin master
    ```
 
 ### Modifying an Existing Table
@@ -522,7 +602,7 @@ vim VIEWS/EMP_DETAILS_VIEW.sql
 # Commit and push
 git add VIEWS/EMP_DETAILS_VIEW.sql
 git commit -m "feat: update EMP_DETAILS_VIEW with new column"
-git push origin main
+git push origin master
 ```
 
 ---
