@@ -1,31 +1,26 @@
 # ============================================================
-# Liquibase Deployment Pipeline
+# Liquibase PR Validation Pipeline (Phase 1)
 # ============================================================
-# Deploys Oracle HR schema objects to an Oracle Autonomous
-# Database using Liquibase Community Edition (OSS).
-#
-# Required GitHub Secrets:
-#   ORACLE_WALLET_BASE64 - Base64-encoded Oracle Wallet ZIP
-#   DB_USERNAME          - Database username (LIQUIBASE_DEPLOYER)
-#   DB_PASSWORD          - Database password
-#   WALLET_PASSWORD      - Wallet download password (for JKS)
+# Runs dry-run validation checks on pull requests targeting master:
+#   1. Check that all SQL files are registered in changelog XMLs
+#   2. Validate Liquibase changelog XML syntax
+#   3. Preview SQL changes (update-sql dry run) in logs and PR
 # ============================================================
 
-name: Liquibase Deploy to Oracle ADB
+name: Liquibase PR Validation
 
 on:
-  push:
+  pull_request:
     branches:
       - master
-  workflow_dispatch:
 
-concurrency:
-  group: oracle-db-deploy
-  cancel-in-progress: false
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
-  deploy:
-    name: Deploy Database Changes
+  validate:
+    name: Validate Database Changes
     runs-on: ubuntu-latest
 
     env:
@@ -39,7 +34,15 @@ jobs:
         uses: actions/checkout@v4
 
       # --------------------------------------------------------
-      # Step 2: Restore Oracle Wallet from GitHub Secrets
+      # Step 2: Check changelog registration
+      # --------------------------------------------------------
+      - name: Check changelog registration
+        run: |
+          chmod +x scripts/sync-changelog.sh
+          ./scripts/sync-changelog.sh --check
+
+      # --------------------------------------------------------
+      # Step 3: Restore Oracle Wallet from GitHub Secrets
       # --------------------------------------------------------
       - name: Decode and extract Oracle Wallet
         run: |
@@ -51,14 +54,12 @@ jobs:
           ls -la ${TNS_ADMIN}
 
       # --------------------------------------------------------
-      # Step 3: Configure wallet for JDBC (JKS mode)
+      # Step 4: Configure wallet for JDBC (JKS mode)
       # --------------------------------------------------------
       - name: Configure ojdbc.properties for JKS authentication
         run: |
           cat > ${TNS_ADMIN}/ojdbc.properties << 'PROPS'
           # Configured for JKS-based authentication (JDBC compatible)
-          # SSO wallet (oracle.net.wallet_location) is commented out
-          # oracle.net.wallet_location=(SOURCE=(METHOD=FILE)(METHOD_DATA=(DIRECTORY=${TNS_ADMIN})))
           javax.net.ssl.trustStore=${TNS_ADMIN}/truststore.jks
           javax.net.ssl.trustStorePassword=${{ secrets.WALLET_PASSWORD }}
           javax.net.ssl.keyStore=${TNS_ADMIN}/keystore.jks
@@ -67,7 +68,7 @@ jobs:
           echo "✅ ojdbc.properties configured for JKS"
 
       # --------------------------------------------------------
-      # Step 4: Configure sqlnet.ora
+      # Step 5: Configure sqlnet.ora
       # --------------------------------------------------------
       - name: Configure sqlnet.ora with wallet path
         run: |
@@ -78,7 +79,7 @@ jobs:
           echo "✅ sqlnet.ora configured"
 
       # --------------------------------------------------------
-      # Step 5: Install Liquibase (Community / OSS Edition)
+      # Step 6: Install Liquibase (Community / OSS Edition)
       # --------------------------------------------------------
       - name: Setup Liquibase
         uses: liquibase/setup-liquibase@v2
@@ -87,11 +88,11 @@ jobs:
           edition: 'oss'
 
       # --------------------------------------------------------
-      # Step 6: Deploy database changes (liquibase update)
+      # Step 7: Validate changelogs
       # --------------------------------------------------------
-      - name: Deploy database changes (liquibase update)
+      - name: Validate Liquibase changelogs
         run: |
-          liquibase update \
+          liquibase validate \
             --changelog-file=db/changelog/db.changelog-master.xml \
             --url="jdbc:oracle:thin:@oracletransdb_low?TNS_ADMIN=${TNS_ADMIN}" \
             --username=${{ secrets.DB_USERNAME }} \
@@ -101,17 +102,45 @@ jobs:
             --driver=oracle.jdbc.OracleDriver
 
       # --------------------------------------------------------
-      # Step 7: Deployment summary
+      # Step 8: Preview changes (dry run / update-sql)
       # --------------------------------------------------------
-      - name: Deployment summary
-        if: success()
+      - name: Preview SQL changes (update-sql)
         run: |
-          echo "============================================================"
-          echo "✅ DATABASE DEPLOYMENT SUCCESSFUL"
-          echo "============================================================"
-          echo "Database:  Oracle Autonomous Database (oracletransdb_low)"
-          echo "User:      ${{ secrets.DB_USERNAME }}"
-          echo "Schema:    HR"
-          echo "Tracking:  LIQUIBASE_DEPLOYER schema"
-          echo "Changelog: db/changelog/db.changelog-master.xml"
-          echo "============================================================"
+          liquibase update-sql \
+            --changelog-file=db/changelog/db.changelog-master.xml \
+            --url="jdbc:oracle:thin:@oracletransdb_low?TNS_ADMIN=${TNS_ADMIN}" \
+            --username=${{ secrets.DB_USERNAME }} \
+            --password=${{ secrets.DB_PASSWORD }} \
+            --default-schema-name=HR \
+            --liquibase-schema-name=LIQUIBASE_DEPLOYER \
+            --driver=oracle.jdbc.OracleDriver > preview.sql
+
+          cat preview.sql
+
+          echo "### 🔍 Liquibase Dry-Run SQL Preview" >> $GITHUB_STEP_SUMMARY
+          echo '```sql' >> $GITHUB_STEP_SUMMARY
+          cat preview.sql >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      # --------------------------------------------------------
+      # Step 9: Post SQL Preview comment on Pull Request
+      # --------------------------------------------------------
+      - name: Comment PR with SQL Preview
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            if (fs.existsSync('preview.sql')) {
+              let sqlContent = fs.readFileSync('preview.sql', 'utf8').trim();
+              if (sqlContent.length > 60000) {
+                sqlContent = sqlContent.substring(0, 60000) + '\n\n... (truncated preview)';
+              }
+              const body = `### 🔍 Liquibase Dry-Run SQL Preview\n\n\`\`\`sql\n${sqlContent}\n\`\`\``;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
