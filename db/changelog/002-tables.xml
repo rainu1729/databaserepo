@@ -47,4 +47,9 @@
         <sqlFile path="TABLES/NEW_TABLE_IN_PDB.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="true"/>
     </changeSet>
 
+    <changeSet id="create-table-projects" author="liquibase-deployer">
+        <comment>Create PROJECTS table</comment>
+        <sqlFile path="TABLES/PROJECTS.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="true"/>
+    </changeSet>
+
 </databaseChangeLog>

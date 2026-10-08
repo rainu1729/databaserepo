@@ -10,4 +10,9 @@
         <sqlFile path="FUNCTIONS/SAMPLE_FUNCTION.sql" relativeToChangelogFile="false" splitStatements="true" endDelimiter="/" stripComments="false"/>
     </changeSet>
 
+    <changeSet id="create-function-calculate-annual-salary" author="liquibase-deployer" runOnChange="true">
+        <comment>Create or replace CALCULATE_ANNUAL_SALARY function</comment>
+        <sqlFile path="FUNCTIONS/CALCULATE_ANNUAL_SALARY.sql" relativeToChangelogFile="false" splitStatements="true" endDelimiter="/" stripComments="false"/>
+    </changeSet>
+
 </databaseChangeLog>
